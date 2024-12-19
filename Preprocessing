@@ -1,0 +1,75 @@
+# Step 1: Import necessary libraries
+import json
+import re
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+from collections import Counter
+
+# Step 2: Load the dataset
+source_path = r"C:\Users\Bhavani prasad\Videos\Captures\B.TECH CSE\internships\online free internship 1\intents.json"
+with open(source_path, 'r') as file:
+    data = json.load(file)
+
+# Step 3: Extract patterns (input sentences) and intents (categories)
+patterns = []
+intents = []
+
+for intent in data:
+    for pattern in intent["patterns"]:
+        patterns.append(pattern)
+        intents.append(intent["tag"])
+
+# Step 4: Perform EDA (Exploratory Data Analysis)
+
+# Check the number of unique intents
+unique_intents = set(intents)
+print("Number of unique intents:", len(unique_intents))
+print("Unique intents:", unique_intents)
+
+# Count how many patterns are there for each intent
+intent_counts = Counter(intents)
+print("\nPatterns per intent:")
+for intent, count in intent_counts.items():
+    print(f"{intent}: {count}")
+
+# Visualize the distribution of patterns per intent
+plt.figure(figsize=(10, 5))
+plt.bar(intent_counts.keys(), intent_counts.values(), color='skyblue')
+plt.title("Number of Patterns per Intent")
+plt.xlabel("Intents")
+plt.ylabel("Number of Patterns")
+plt.xticks(rotation=45)
+plt.show()
+
+# Find the most common words in the patterns
+# Preprocess the patterns to clean the text
+def preprocess_text(text):
+    text = text.lower()
+    text = re.sub(r'[^a-z\s]', '', text)
+    return text
+
+preprocessed_patterns = [preprocess_text(p) for p in patterns]
+all_words = ' '.join(preprocessed_patterns).split()
+word_counts = Counter(all_words)
+common_words = word_counts.most_common(10)
+
+print("\nTop 10 common words:")
+for word, count in common_words:
+    print(f"{word}: {count}")
+
+# Step 5: Split the data into training, validation, and test sets
+# X = input sentences, y = intents (labels)
+X = preprocessed_patterns  # Cleaned input sentences
+y = intents  # Corresponding intents
+
+# First, split into training (80%) and temporary (20%)
+X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Then, split the temporary set into validation (10%) and test (10%)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+
+# Step 6: Print the sizes of each dataset
+print("\nData Split Sizes:")
+print(f"Training Set: {len(X_train)} patterns")
+print(f"Validation Set: {len(X_val)} patterns")
+print(f"Test Set: {len(X_test)} patterns")
