@@ -1,0 +1,71 @@
+
+# Step 7: Convert text to numerical features using TF-IDF
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Create a TF-IDF vectorizer
+vectorizer = TfidfVectorizer(max_features=1000)  # Limit features for simplicity
+X_vectorized = vectorizer.fit_transform(X_train)  # Vectorize training data
+X_val_vectorized = vectorizer.transform(X_val)    # Vectorize validation data
+X_test_vectorized = vectorizer.transform(X_test)  # Vectorize test data
+
+# Step 8: Implement a baseline model (Logistic Regression)
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+
+# Train the baseline model
+baseline_model = LogisticRegression()
+baseline_model.fit(X_vectorized, y_train)
+
+# Predict on the validation set
+y_val_pred = baseline_model.predict(X_val_vectorized)
+
+# Evaluate the baseline model
+baseline_accuracy = accuracy_score(y_val, y_val_pred)
+print("\nBaseline Model Accuracy (Logistic Regression):", baseline_accuracy)
+print("\nClassification Report (Validation Set):\n", classification_report(y_val, y_val_pred))
+
+# Step 9: Train other machine learning models
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+
+# Support Vector Machine (SVM)
+svm_model = SVC(kernel='linear')
+svm_model.fit(X_vectorized, y_train)
+y_val_pred_svm = svm_model.predict(X_val_vectorized)
+svm_accuracy = accuracy_score(y_val, y_val_pred_svm)
+print("\nSVM Model Accuracy:", svm_accuracy)
+
+# Random Forest
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_vectorized, y_train)
+y_val_pred_rf = rf_model.predict(X_val_vectorized)
+rf_accuracy = accuracy_score(y_val, y_val_pred_rf)
+print("\nRandom Forest Model Accuracy:", rf_accuracy)
+
+# Step 10: Conduct feature engineering (TF-IDF with n-grams)
+# Experiment with unigrams and bigrams
+vectorizer_ngram = TfidfVectorizer(ngram_range=(1, 2), max_features=2000)
+X_vectorized_ngram = vectorizer_ngram.fit_transform(X_train)
+X_val_vectorized_ngram = vectorizer_ngram.transform(X_val)
+
+# Train Logistic Regression with n-gram features
+lr_ngram_model = LogisticRegression()
+lr_ngram_model.fit(X_vectorized_ngram, y_train)
+y_val_pred_ngram = lr_ngram_model.predict(X_val_vectorized_ngram)
+ngram_accuracy = accuracy_score(y_val, y_val_pred_ngram)
+print("\nLogistic Regression with N-grams Accuracy:", ngram_accuracy)
+
+# Step 11: Apply cross-validation for model evaluation
+from sklearn.model_selection import cross_val_score
+
+# Perform cross-validation on Logistic Regression
+cv_scores = cross_val_score(baseline_model, X_vectorized, y_train, cv=5)
+print("\nLogistic Regression Cross-Validation Scores:", cv_scores)
+print("Mean Cross-Validation Accuracy:", cv_scores.mean())
+
+# Step 12: Final Evaluation on Test Set
+# Choose the best-performing model (e.g., SVM) and evaluate on the test set
+y_test_pred = svm_model.predict(X_test_vectorized)
+test_accuracy = accuracy_score(y_test, y_test_pred)
+print("\nFinal Test Set Accuracy (SVM):", test_accuracy)
+print("\nClassification Report (Test Set):\n", classification_report(y_test, y_test_pred))
